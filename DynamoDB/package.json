@@ -1,0 +1,14 @@
+{
+  "name": "dynamodb",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "node --test $(find about -name '*.test.js')"
+  },
+  "author": "ericminio",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.565.0"
+  }
+}
