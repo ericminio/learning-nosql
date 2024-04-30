@@ -17,14 +17,6 @@ jobs:
         run: |
           sudo echo "172.17.0.1 host.docker.internal" | sudo tee -a /etc/hosts
           cat /etc/hosts
-      - name: start dynamodb
-        run: |
-          cd DynamoDB
-          docker run -d -p 8000:8000 --name dynamodb amazon/dynamodb-local:2.4.0
-      - name: wait for DynamoDB
-        run: |
-          cd DynamoDB
-          ./wait/wait.sh
       - name: install node
         uses: actions/setup-node@v2
         with:
@@ -34,6 +26,14 @@ jobs:
           node --version
           npm --version
           docker ps
+      - name: start dynamodb
+        run: |
+          cd DynamoDB
+          docker run -d -p 8000:8000 --name dynamodb amazon/dynamodb-local:2.4.0
+      - name: wait for DynamoDB
+        run: |
+          cd DynamoDB
+          ./wait/wait.sh
       - name: run the tests
         run: |
           cd dynamoDB
