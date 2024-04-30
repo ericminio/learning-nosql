@@ -38,4 +38,4 @@ jobs:
         run: |
           cd DynamoDB
           npm install
-          npm test
+          AWS_ACCESS_KEY_ID=any AWS_SECRET_ACCESS_KEY=any npm test
