@@ -35,3 +35,8 @@ jobs:
         run: |
           cd MongoDB
           ./wait/wait.sh
+      - name: run the tests
+        run: |
+          cd MongoDB
+          npm install
+          npm test

@@ -1,0 +1,14 @@
+{
+  "name": "mongodb",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "node --test $(find about -name '*.test.js')"
+  },
+  "author": "ericminio",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "mongodb": "^6.5.0"
+  }
+}
