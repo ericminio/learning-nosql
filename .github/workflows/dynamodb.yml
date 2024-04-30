@@ -34,7 +34,7 @@ jobs:
       - name: wait for DynamoDB
         run: |
           cd DynamoDB
-          ./wait/wait.sh
+          ../.github/workflows/wait/dynamodb.sh
       - name: run the tests
         run: |
           cd DynamoDB
