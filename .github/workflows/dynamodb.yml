@@ -1,0 +1,40 @@
+name: dynamodb
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  test:
+    name: run tests
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      - name: update /etc/hosts
+        run: |
+          sudo echo "172.17.0.1 host.docker.internal" | sudo tee -a /etc/hosts
+          cat /etc/hosts
+      - name: start dynamodb
+        run: |
+          cd DynamoDB
+          docker run -p 8000:8000 amazon/dynamodb-local:2.4.0
+      - name: wait for DynamoDB
+        run: |
+          cd DynamoDB
+          ./wait/wait.sh
+      - name: install node
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: "./DynamoDB/.nvmrc"
+      - name: info
+        run: |
+          node --version
+          npm --version
+      - name: run the tests
+        run: |
+          cd dynamoDB
+          npm install
+          npm test
