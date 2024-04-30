@@ -8,8 +8,8 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import {
   DynamoDBDocumentClient,
-  GetCommand,
   PutCommand,
+  QueryCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 describe("fetching data", () => {
@@ -25,14 +25,22 @@ describe("fetching data", () => {
         TableName: "Persons",
         AttributeDefinitions: [
           {
-            AttributeName: "Name",
+            AttributeName: "FirstName",
+            AttributeType: "S",
+          },
+          {
+            AttributeName: "City",
             AttributeType: "S",
           },
         ],
         KeySchema: [
           {
-            AttributeName: "Name",
+            AttributeName: "FirstName",
             KeyType: "HASH",
+          },
+          {
+            AttributeName: "City",
+            KeyType: "RANGE",
           },
         ],
         ProvisionedThroughput: {
@@ -45,15 +53,48 @@ describe("fetching data", () => {
     assert.equal(response.TableDescription.TableStatus, "ACTIVE");
   });
 
-  it("can return a single item", async () => {
-    const inserted = await docClient.send(
+  it("can return several items", async () => {
+    let inserted;
+    inserted = await docClient.send(
       new PutCommand({
         TableName: "Persons",
         Item: {
-          Name: "Bob",
+          FirstName: "Bob",
+          City: "Paris",
         },
       })
     );
     assert.equal(inserted.$metadata.httpStatusCode, 200);
+    inserted = await docClient.send(
+      new PutCommand({
+        TableName: "Persons",
+        Item: {
+          FirstName: "Bob",
+          City: "Vancouver",
+        },
+      })
+    );
+    assert.equal(inserted.$metadata.httpStatusCode, 200);
+
+    const {
+      $metadata: { httpStatusCode },
+      Count,
+      Items,
+    } = await docClient.send(
+      new QueryCommand({
+        TableName: "Persons",
+        KeyConditionExpression: "FirstName = :firstName",
+        ExpressionAttributeValues: {
+          ":firstName": "Bob",
+        },
+        ConsistentRead: true,
+      })
+    );
+    assert.equal(httpStatusCode, 200);
+    assert.equal(Count, 2);
+    assert.deepStrictEqual(Items, [
+      { FirstName: "Bob", City: "Paris" },
+      { FirstName: "Bob", City: "Vancouver" },
+    ]);
   });
 });
