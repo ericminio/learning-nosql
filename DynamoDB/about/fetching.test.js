@@ -13,7 +13,10 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 
 describe("fetching data", () => {
-  const client = new DynamoDBClient({ endpoint: "http://localhost:8000" });
+  const client = new DynamoDBClient({
+    endpoint: "http://localhost:8000",
+    region: "us-west-2",
+  });
   const docClient = DynamoDBDocumentClient.from(client);
 
   beforeEach(async () => {

@@ -8,7 +8,10 @@ import {
 } from "@aws-sdk/client-dynamodb";
 
 describe("creating table", () => {
-  const client = new DynamoDBClient({ endpoint: "http://localhost:8000" });
+  const client = new DynamoDBClient({
+    endpoint: "http://localhost:8000",
+    region: "us-west-2",
+  });
 
   beforeEach(async () => {
     try {
