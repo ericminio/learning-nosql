@@ -36,6 +36,6 @@ jobs:
           ./wait/wait.sh
       - name: run the tests
         run: |
-          cd dynamoDB
+          cd DynamoDB
           npm install
           npm test
