@@ -3,9 +3,9 @@ function waiting {
     ready=0
     while [ "$ready" -eq "0" ]
     do    
-        ready=`$3 | grep "$2" | wc -l`
+        ready=`$2 | wc -l`
         if [ "$ready" -eq "0" ]; then    
-            echo "Waiting for $1 to answer with $2"
+            echo "Waiting for $1"
             sleep 1;
         fi
     done;
