@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source '../support/waiting.sh'
+source '../.github/workflows/wait/waiting.sh'
 
 function with_this_waiting_command {
     docker run \
