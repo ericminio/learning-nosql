@@ -21,15 +21,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version-file: "./DynamoDB/.nvmrc"
+      - name: start dynamodb
+        run: |
+          cd DynamoDB
+          docker run -d -p 8000:8000 --name dynamodb amazon/dynamodb-local:2.4.0
       - name: info
         run: |
           node --version
           npm --version
           docker ps
-      - name: start dynamodb
-        run: |
-          cd DynamoDB
-          docker run -d -p 8000:8000 --name dynamodb amazon/dynamodb-local:2.4.0
       - name: wait for DynamoDB
         run: |
           cd DynamoDB
