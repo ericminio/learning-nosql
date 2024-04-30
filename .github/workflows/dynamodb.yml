@@ -20,7 +20,7 @@ jobs:
       - name: start dynamodb
         run: |
           cd DynamoDB
-          docker run -d -p 8000:8000 amazon/dynamodb-local:2.4.0
+          docker run -d -p 8000:8000 --name dynamodb amazon/dynamodb-local:2.4.0
       - name: wait for DynamoDB
         run: |
           cd DynamoDB
@@ -33,6 +33,7 @@ jobs:
         run: |
           node --version
           npm --version
+          docker ps
       - name: run the tests
         run: |
           cd dynamoDB
