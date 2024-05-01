@@ -50,7 +50,7 @@ describe("visitor -> visited", () => {
     assert.equal(response.TableDescription.TableStatus, "ACTIVE");
   });
 
-  it("can record a user visiting", async () => {
+  it("can query all the visits of one user", async () => {
     let inserted;
     inserted = await docClient.send(
       new PutCommand({
@@ -74,6 +74,7 @@ describe("visitor -> visited", () => {
         ExpressionAttributeValues: {
           ":UserId": "Bob",
         },
+        ProjectionExpression: "visits",
         ConsistentRead: true,
       })
     );
@@ -81,7 +82,6 @@ describe("visitor -> visited", () => {
     assert.equal(Count, 1);
     assert.deepStrictEqual(Items, [
       {
-        UserId: "Bob",
         visits: [1, 2, 3],
       },
     ]);
