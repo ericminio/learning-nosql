@@ -28,6 +28,14 @@ describe("visitor -> visited", () => {
 
     assert.deepStrictEqual(visits, [15]);
   });
+
+  it("can record two visits", async () => {
+    await recordVisit("Bob", 15);
+    await recordVisit("Bob", 42);
+    const visits = await getVisitsByVisitor("Bob");
+
+    assert.deepStrictEqual(visits, [15, 42]);
+  });
 });
 
 const client = new DynamoDBClient({
@@ -64,19 +72,19 @@ const getVisitsByVisitor = async (VisitorId) => {
       ExpressionAttributeValues: {
         ":VisitorId": VisitorId,
       },
-      ProjectionExpression: "Visits",
       ConsistentRead: true,
     })
   );
-  return Items[0].Visits;
+  return Items.length > 0 ? Items[0].Visits : [];
 };
 const recordVisit = async (VisitorId, VisitedId) => {
+  const visits = await getVisitsByVisitor(VisitorId);
   await docClient.send(
     new PutCommand({
       TableName,
       Item: {
         VisitorId,
-        Visits: [VisitedId],
+        Visits: [...visits, VisitedId],
       },
     })
   );
