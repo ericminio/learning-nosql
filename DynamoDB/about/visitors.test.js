@@ -42,6 +42,7 @@ describe("visitor -> visited", () => {
     await recordVisit("Bob", 15);
     await recordVisit("Bob", 42);
     await recordVisit("Alice", 15);
+    await recordVisit("XXX", 66);
     const visitors = await getVisitorsByVisited(15);
 
     assert.deepStrictEqual(visitors, ["Alice", "Bob"]);
