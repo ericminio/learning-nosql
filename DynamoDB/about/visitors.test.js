@@ -60,51 +60,85 @@ const schema = {
   TableName,
   AttributeDefinitions: [
     {
+      AttributeName: "VisitedId",
+      AttributeType: "N",
+    },
+    {
       AttributeName: "VisitorId",
       AttributeType: "S",
     },
   ],
   KeySchema: [
     {
-      AttributeName: "VisitorId",
+      AttributeName: "VisitedId",
       KeyType: "HASH",
+    },
+    {
+      AttributeName: "VisitorId",
+      KeyType: "RANGE",
     },
   ],
   ProvisionedThroughput: {
     ReadCapacityUnits: 1,
     WriteCapacityUnits: 1,
   },
+  GlobalSecondaryIndexes: [
+    {
+      IndexName: `${TableName}-index`,
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 1,
+        WriteCapacityUnits: 1,
+      },
+      Projection: {
+        ProjectionType: "ALL",
+      },
+      KeySchema: [
+        {
+          AttributeName: "VisitorId",
+          KeyType: "HASH",
+        },
+        {
+          AttributeName: "VisitedId",
+          KeyType: "RANGE",
+        },
+      ],
+    },
+  ],
+};
+const recordVisit = async (VisitorId, VisitedId) => {
+  await docClient.send(
+    new PutCommand({
+      TableName,
+      Item: {
+        VisitedId,
+        VisitorId,
+      },
+    })
+  );
 };
 const getVisitsByVisitor = async (VisitorId) => {
   const { Items } = await docClient.send(
     new QueryCommand({
       TableName,
+      IndexName: `${TableName}-index`,
       KeyConditionExpression: "VisitorId = :VisitorId",
       ExpressionAttributeValues: {
         ":VisitorId": VisitorId,
       },
+    })
+  );
+  return Items.map(({ VisitedId }) => VisitedId);
+};
+const getVisitorsByVisited = async (VisitedId) => {
+  const { Items } = await docClient.send(
+    new QueryCommand({
+      TableName,
+      KeyConditionExpression: "VisitedId = :VisitedId",
+      ExpressionAttributeValues: {
+        ":VisitedId": VisitedId,
+      },
       ConsistentRead: true,
     })
   );
-  return Items.length > 0 ? Items[0].Visits : [];
-};
-const recordVisit = async (VisitorId, VisitedId) => {
-  const visits = await getVisitsByVisitor(VisitorId);
-  await docClient.send(
-    new PutCommand({
-      TableName,
-      Item: {
-        VisitorId,
-        Visits: [...visits, VisitedId],
-      },
-    })
-  );
-};
-const getVisitorsByVisited = async (VisitedId) => {
-  const { Items: all } = await docClient.send(new ScanCommand({ TableName }));
-  const visitors = all
-    .filter(({ Visits }) => Visits.includes(VisitedId))
-    .map(({ VisitorId }) => VisitorId);
-
-  return visitors;
+  return Items.map(({ VisitorId }) => VisitorId);
 };
