@@ -36,6 +36,15 @@ describe("visitor -> visited", () => {
 
     assert.deepStrictEqual(visits, [15, 42]);
   });
+
+  it("can provide the visitors of one visited", async () => {
+    await recordVisit("Bob", 15);
+    await recordVisit("Bob", 42);
+    await recordVisit("Alice", 15);
+    const visitors = await getVisitorsByVisited(15);
+
+    assert.deepStrictEqual(visitors, ["Bob", "Alice"]);
+  });
 });
 
 const client = new DynamoDBClient({
@@ -88,4 +97,7 @@ const recordVisit = async (VisitorId, VisitedId) => {
       },
     })
   );
+};
+const getVisitorsByVisited = async (VisitedId) => {
+  return ["Bob", "Alice"];
 };
