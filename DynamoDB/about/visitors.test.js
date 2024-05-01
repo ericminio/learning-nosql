@@ -10,6 +10,7 @@ import {
   DynamoDBDocumentClient,
   PutCommand,
   QueryCommand,
+  ScanCommand,
 } from "@aws-sdk/lib-dynamodb";
 
 describe("visitor -> visited", () => {
@@ -43,7 +44,7 @@ describe("visitor -> visited", () => {
     await recordVisit("Alice", 15);
     const visitors = await getVisitorsByVisited(15);
 
-    assert.deepStrictEqual(visitors, ["Bob", "Alice"]);
+    assert.deepStrictEqual(visitors, ["Alice", "Bob"]);
   });
 });
 
@@ -99,5 +100,10 @@ const recordVisit = async (VisitorId, VisitedId) => {
   );
 };
 const getVisitorsByVisited = async (VisitedId) => {
-  return ["Bob", "Alice"];
+  const { Items: all } = await docClient.send(new ScanCommand({ TableName }));
+  const visitors = all
+    .filter(({ Visits }) => Visits.includes(VisitedId))
+    .map(({ VisitorId }) => VisitorId);
+
+  return visitors;
 };
