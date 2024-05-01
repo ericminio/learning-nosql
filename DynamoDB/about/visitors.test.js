@@ -17,51 +17,50 @@ const client = new DynamoDBClient({
   region: "us-west-2",
 });
 const docClient = DynamoDBDocumentClient.from(client);
+const TableName = "Visits";
+const schema = {
+  TableName,
+  AttributeDefinitions: [
+    {
+      AttributeName: "VisitorId",
+      AttributeType: "S",
+    },
+  ],
+  KeySchema: [
+    {
+      AttributeName: "VisitorId",
+      KeyType: "HASH",
+    },
+  ],
+  ProvisionedThroughput: {
+    ReadCapacityUnits: 1,
+    WriteCapacityUnits: 1,
+  },
+};
+const recordVisit = async (VisitorId, VisitedId) => {
+  await docClient.send(
+    new PutCommand({
+      TableName,
+      Item: {
+        VisitorId,
+        visits: [VisitedId],
+      },
+    })
+  );
+};
 
 describe("visitor -> visited", () => {
-  const TableName = "Visitors";
-
   beforeEach(async () => {
     try {
       await client.send(new DeleteTableCommand({ TableName }));
     } catch {}
-    const response = await client.send(
-      new CreateTableCommand({
-        TableName,
-        AttributeDefinitions: [
-          {
-            AttributeName: "UserId",
-            AttributeType: "S",
-          },
-        ],
-        KeySchema: [
-          {
-            AttributeName: "UserId",
-            KeyType: "HASH",
-          },
-        ],
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 1,
-          WriteCapacityUnits: 1,
-        },
-      })
-    );
+    const response = await client.send(new CreateTableCommand(schema));
     assert.equal(response.$metadata.httpStatusCode, 200);
     assert.equal(response.TableDescription.TableStatus, "ACTIVE");
   });
 
-  it("can query all the visits of one user", async () => {
-    let inserted;
-    inserted = await docClient.send(
-      new PutCommand({
-        TableName,
-        Item: {
-          UserId: "Bob",
-          visits: [1, 2, 3],
-        },
-      })
-    );
-    assert.equal(inserted.$metadata.httpStatusCode, 200);
+  it("can record one visit", async () => {
+    await recordVisit("Bob", 15);
 
     const {
       $metadata: { httpStatusCode },
@@ -70,9 +69,9 @@ describe("visitor -> visited", () => {
     } = await docClient.send(
       new QueryCommand({
         TableName,
-        KeyConditionExpression: "UserId = :UserId",
+        KeyConditionExpression: "VisitorId = :VisitorId",
         ExpressionAttributeValues: {
-          ":UserId": "Bob",
+          ":VisitorId": "Bob",
         },
         ProjectionExpression: "visits",
         ConsistentRead: true,
@@ -82,7 +81,7 @@ describe("visitor -> visited", () => {
     assert.equal(Count, 1);
     assert.deepStrictEqual(Items, [
       {
-        visits: [1, 2, 3],
+        visits: [15],
       },
     ]);
   });
